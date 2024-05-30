@@ -644,6 +644,8 @@ class ColourConverter(Converter[discord.Colour]):
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.Colour:
         try:
+            if len(argument) == 6:
+                argument = f"#{argument}"
             return discord.Colour.from_str(argument)
         except ValueError:
             arg = argument.lower().replace(' ', '_')
@@ -681,7 +683,10 @@ class RoleConverter(IDConverter[discord.Role]):
         if match:
             result = guild.get_role(int(match.group(1)))
         else:
-            result = discord.utils.get(guild._roles.values(), name=argument)
+            result = None
+            for role in guild.roles:
+                if argument in role.name:
+                    result = role
 
         if result is None:
             raise RoleNotFound(argument)
@@ -1185,7 +1190,7 @@ def _convert_to_bool(argument: str) -> bool:
         raise BadBoolArgument(lowered)
 
 
-_GenericAlias = type(List[T])  # type: ignore
+_GenericAlias = type(List[T])
 
 
 def is_generic_type(tp: Any, *, _GenericAlias: type = _GenericAlias) -> bool:
